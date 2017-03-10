@@ -1,0 +1,4 @@
+*.suo
+/PixivClassifier/bin
+/PixivClassifier/obj
+*.user
