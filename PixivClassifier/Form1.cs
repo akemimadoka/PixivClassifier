@@ -119,7 +119,6 @@ namespace PixivClassifier
 		{
 			using (var folderBrowserDialog = new FolderBrowserDialog())
 			{
-				folderBrowserDialog.SelectedPath = @"D:\temp\pic";
 				var result = folderBrowserDialog.ShowDialog();
 				if (result == DialogResult.OK && Directory.Exists(folderBrowserDialog.SelectedPath))
 				{
