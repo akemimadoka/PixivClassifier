@@ -19,7 +19,7 @@ namespace PixivClassifier.Properties {
     // 类通过类似于 ResGen 或 Visual Studio 的工具自动生成的。
     // 若要添加或移除成员，请编辑 .ResX 文件，然后重新运行 ResGen
     // (以 /str 作为命令选项)，或重新生成 VS 项目。
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -61,6 +61,15 @@ namespace PixivClassifier.Properties {
         }
         
         /// <summary>
+        ///   查找类似 在复制文件 {0} 到 {1} 的过程中发生异常：{2} 的本地化字符串。
+        /// </summary>
+        internal static string CopyErrorDescription {
+            get {
+                return ResourceManager.GetString("CopyErrorDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 无法复制到剪贴板，发生了异常:{0} 的本地化字符串。
         /// </summary>
         internal static string CopyToClipboardFailedDueTo {
@@ -70,11 +79,56 @@ namespace PixivClassifier.Properties {
         }
         
         /// <summary>
+        ///   查找类似 在删除文件 {0} 的过程中发生异常：{1} 的本地化字符串。
+        /// </summary>
+        internal static string DeleteErrorDescription {
+            get {
+                return ResourceManager.GetString("DeleteErrorDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   查找类似 错误 的本地化字符串。
         /// </summary>
         internal static string MessageError {
             get {
                 return ResourceManager.GetString("MessageError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 在移动文件 {0} 到 {1} 的过程中发生异常：{2} 的本地化字符串。
+        /// </summary>
+        internal static string MoveErrorDescription {
+            get {
+                return ResourceManager.GetString("MoveErrorDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 提示 的本地化字符串。
+        /// </summary>
+        internal static string Notification {
+            get {
+                return ResourceManager.GetString("Notification", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 操作成功完成 的本地化字符串。
+        /// </summary>
+        internal static string OperationCompleted {
+            get {
+                return ResourceManager.GetString("OperationCompleted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 操作被用户中止 的本地化字符串。
+        /// </summary>
+        internal static string OperationStoppedByUser {
+            get {
+                return ResourceManager.GetString("OperationStoppedByUser", resourceCulture);
             }
         }
         

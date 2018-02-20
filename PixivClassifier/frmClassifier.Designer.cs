@@ -1,6 +1,6 @@
 ﻿namespace PixivClassifier
 {
-	partial class Form1
+	partial class frmClassifier
 	{
 		/// <summary>
 		/// 必需的设计器变量。
@@ -38,6 +38,10 @@
 			this.txtThreadCount = new System.Windows.Forms.TextBox();
 			this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.mnuCopySelectedItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.mnuForAllFileInTag = new System.Windows.Forms.ToolStripMenuItem();
+			this.mnuCopyTo = new System.Windows.Forms.ToolStripMenuItem();
+			this.mnuMoveTo = new System.Windows.Forms.ToolStripMenuItem();
+			this.mnuDelete = new System.Windows.Forms.ToolStripMenuItem();
 			this.chkSearchRecursively = new System.Windows.Forms.CheckBox();
 			this.btnStartSearch = new System.Windows.Forms.Button();
 			this.label3 = new System.Windows.Forms.Label();
@@ -106,17 +110,50 @@
 			// contextMenuStrip1
 			// 
 			this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.mnuCopySelectedItem});
+            this.mnuCopySelectedItem,
+            this.mnuForAllFileInTag});
 			this.contextMenuStrip1.Name = "contextMenuStrip1";
-			this.contextMenuStrip1.Size = new System.Drawing.Size(181, 26);
+			this.contextMenuStrip1.Size = new System.Drawing.Size(330, 70);
 			this.contextMenuStrip1.Opening += new System.ComponentModel.CancelEventHandler(this.contextMenuStrip1_Opening);
 			// 
 			// mnuCopySelectedItem
 			// 
 			this.mnuCopySelectedItem.Name = "mnuCopySelectedItem";
-			this.mnuCopySelectedItem.Size = new System.Drawing.Size(180, 22);
+			this.mnuCopySelectedItem.Size = new System.Drawing.Size(329, 22);
 			this.mnuCopySelectedItem.Text = "复制选中内容（&C）";
 			this.mnuCopySelectedItem.Click += new System.EventHandler(this.mnuCopySelectedItem_Click);
+			// 
+			// mnuForAllFileInTag
+			// 
+			this.mnuForAllFileInTag.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.mnuCopyTo,
+            this.mnuMoveTo,
+            this.mnuDelete});
+			this.mnuForAllFileInTag.Enabled = false;
+			this.mnuForAllFileInTag.Name = "mnuForAllFileInTag";
+			this.mnuForAllFileInTag.Size = new System.Drawing.Size(329, 22);
+			this.mnuForAllFileInTag.Text = "对选中的 Tag 下的所有文件执行同一操作（&E）";
+			// 
+			// mnuCopyTo
+			// 
+			this.mnuCopyTo.Name = "mnuCopyTo";
+			this.mnuCopyTo.Size = new System.Drawing.Size(157, 22);
+			this.mnuCopyTo.Text = "复制到...（&O）";
+			this.mnuCopyTo.Click += new System.EventHandler(this.mnuCopyTo_Click);
+			// 
+			// mnuMoveTo
+			// 
+			this.mnuMoveTo.Name = "mnuMoveTo";
+			this.mnuMoveTo.Size = new System.Drawing.Size(157, 22);
+			this.mnuMoveTo.Text = "移动到...（&M）";
+			this.mnuMoveTo.Click += new System.EventHandler(this.mnuMoveTo_Click);
+			// 
+			// mnuDelete
+			// 
+			this.mnuDelete.Name = "mnuDelete";
+			this.mnuDelete.Size = new System.Drawing.Size(157, 22);
+			this.mnuDelete.Text = "删除（&D）";
+			this.mnuDelete.Click += new System.EventHandler(this.mnuDelete_Click);
 			// 
 			// chkSearchRecursively
 			// 
@@ -155,7 +192,7 @@
 			this.txtTimeout.TabIndex = 11;
 			this.txtTimeout.Text = "0";
 			// 
-			// Form1
+			// frmClassifier
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -173,9 +210,9 @@
 			this.Controls.Add(this.label1);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
 			this.MaximizeBox = false;
-			this.Name = "Form1";
+			this.Name = "frmClassifier";
 			this.Text = "Pixiv快速分类器";
-			this.Load += new System.EventHandler(this.Form1_Load);
+			this.Load += new System.EventHandler(this.frmClassifier_Load);
 			this.contextMenuStrip1.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
@@ -197,6 +234,10 @@
 		private System.Windows.Forms.Button btnStartSearch;
 		private System.Windows.Forms.Label label3;
 		private System.Windows.Forms.TextBox txtTimeout;
+		private System.Windows.Forms.ToolStripMenuItem mnuForAllFileInTag;
+		private System.Windows.Forms.ToolStripMenuItem mnuCopyTo;
+		private System.Windows.Forms.ToolStripMenuItem mnuMoveTo;
+		private System.Windows.Forms.ToolStripMenuItem mnuDelete;
 	}
 }
 

@@ -4,16 +4,16 @@ using System.ComponentModel;
 using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Net.Http;
+using System.Threading;
 using PixivClassifier.Properties;
 
 namespace PixivClassifier
 {
-	public partial class Form1 : Form
+	public partial class frmClassifier : Form
 	{
 		// Key: PixivID, Value: 图片文件名
 		private readonly Dictionary<string, HashSet<string>> _pixivIds = new Dictionary<string, HashSet<string>>();
@@ -26,7 +26,7 @@ namespace PixivClassifier
 		private int _timeout;
 		private bool _isSearching;
 
-		public Form1()
+		public frmClassifier()
 		{
 			InitializeComponent();
 		}
@@ -42,7 +42,7 @@ namespace PixivClassifier
 				HttpResponseMessage responseMessage;
 				try
 				{
-					responseMessage = await httpClient.GetAsync($"http://www.pixiv.net/member_illust.php?mode=medium&illust_id={pixivId}");
+					responseMessage = await httpClient.GetAsync($"https://www.pixiv.net/member_illust.php?mode=medium&illust_id={pixivId}");
 					if (!responseMessage.IsSuccessStatusCode)
 					{
 						return null;
@@ -58,8 +58,7 @@ namespace PixivClassifier
 
 				foreach (var matchObj in _pixivTagPattern.Matches(contentString))
 				{
-					var match = matchObj as Match;
-					if (match == null || !match.Success)
+					if (!(matchObj is Match match) || !match.Success)
 					{
 						continue;
 					}
@@ -133,7 +132,8 @@ namespace PixivClassifier
 			{
 				return;
 			}
-			
+
+			mnuForAllFileInTag.Enabled = tvPictures.SelectedNode != null && tvPictures.SelectedNode.Level == 0;
 			contextMenuStrip1.Show(MousePosition);
 		}
 
@@ -208,6 +208,8 @@ namespace PixivClassifier
 				filenames.Add(filename);
 			}
 
+			Dictionary<string, HashSet<string>>.KeyCollection allPixivIds;
+
 			lock (_lockId)
 			{
 				foreach (var filename in filenames)
@@ -226,9 +228,14 @@ namespace PixivClassifier
 					}
 					pixivPictures.Add(filename);
 				}
+
+				allPixivIds = _pixivIds.Keys;
 			}
 
-			var allPixivIds = _pixivIds.Keys;
+			if (allPixivIds.Count == 0)
+			{
+				return;
+			}
 
 			tvPictures.Nodes.Clear();
 			txtPicturePath.Enabled = txtThreadCount.Enabled = txtTimeout.Enabled = btnSelectFolder.Enabled = btnStartSearch.Enabled = chkSearchRecursively.Enabled = false;
@@ -243,13 +250,11 @@ namespace PixivClassifier
 			var remainedFiles = allPixivIds.Count % threadCount;
 
 			var allTask = new List<Task>(threadCount);
-			for (var i = 0; i < threadCount; ++i)
+			for (var currentThread = 0; currentThread < threadCount; ++currentThread)
 			{
-				var currentThread = i;
-				var cachedThreadCount = threadCount;
 				allTask.Add(SearchTag(
 					allPixivIds.Skip(currentThread * filesPerThread)
-						.Take((currentThread == cachedThreadCount - 1 ? remainedFiles : 0) + filesPerThread),
+						.Take((currentThread == threadCount - 1 ? remainedFiles : 0) + filesPerThread),
 					() => { progressBar1.Invoke((Action)(() => { ++progressBar1.Value; })); }));
 			}
 
@@ -273,6 +278,7 @@ namespace PixivClassifier
 							}
 						}
 
+						tvPictures.Sort();
 						txtPicturePath.Enabled = txtThreadCount.Enabled = txtTimeout.Enabled = btnSelectFolder.Enabled = btnStartSearch.Enabled = chkSearchRecursively.Enabled = true;
 					}
 				}));
@@ -285,7 +291,7 @@ namespace PixivClassifier
 			mnuCopySelectedItem.Enabled = tvPictures.SelectedNode != null;
 		}
 
-		private void Form1_Load(object sender, EventArgs e)
+		private void frmClassifier_Load(object sender, EventArgs e)
 		{
 			var toolTip = new ToolTip
 			{
@@ -294,6 +300,214 @@ namespace PixivClassifier
 			};
 			toolTip.SetToolTip(txtThreadCount, Resources.ThreadCountToolTip);
 			toolTip.SetToolTip(txtTimeout, Resources.TimeoutToolTip);
+		}
+
+		// 对于以下函数
+		// 假设当当前菜单可选时总是已检查当前选定节点的有效性，并且无任何异步任务正在执行
+		private void mnuCopyTo_Click(object sender, EventArgs e)
+		{
+			Contract.Assert(!string.IsNullOrWhiteSpace(tvPictures.SelectedNode?.Text) && tvPictures.SelectedNode.Level == 0, "当前选定的节点无效");
+			// 仅检查了锁，并不严谨
+			Contract.Assert(!Monitor.IsEntered(_lockId) && !Monitor.IsEntered(_lockTagMap), "当前正在运行一个或多个异步任务");
+
+			var tagName = tvPictures.SelectedNode.Text;
+
+			string path;
+			using (var folderBrowserDlg = new FolderBrowserDialog())
+			{
+				var result = folderBrowserDlg.ShowDialog();
+				if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDlg.SelectedPath))
+				{
+					path = folderBrowserDlg.SelectedPath;
+				}
+				else
+				{
+					return;
+				}
+			}
+
+			var idSet = _tagMap[tagName];
+
+			progressBar1.Value = 0;
+			progressBar1.Minimum = 0;
+			progressBar1.Maximum = idSet.Count;
+
+			foreach (var id in idSet)
+			{
+				foreach (var filePath in _pixivIds[id])
+				{
+					var fileName = Path.GetFileName(filePath);
+					if (fileName == null)
+					{
+						continue;
+					}
+
+					var targetPath = path + '\\' + fileName;
+
+					while (true)
+					{
+						try
+						{
+							File.Copy(filePath, targetPath);
+							break;
+						}
+						catch (Exception exception)
+						{
+							var result = MessageBox.Show(string.Format(Resources.CopyErrorDescription, filePath, targetPath, exception), Resources.MessageError, MessageBoxButtons.AbortRetryIgnore);
+							switch (result)
+							{
+								case DialogResult.Abort:
+									MessageBox.Show(Resources.OperationStoppedByUser, Resources.Notification);
+									progressBar1.Value = 0;
+									return;
+								case DialogResult.Retry:
+									continue;
+								case DialogResult.Ignore:
+									goto NextFile;
+								default:
+									throw new ArgumentOutOfRangeException();
+							}
+						}
+					}
+					NextFile:;
+				}
+
+				++progressBar1.Value;
+			}
+
+			MessageBox.Show(Resources.OperationCompleted, Resources.Notification);
+		}
+
+		private void mnuMoveTo_Click(object sender, EventArgs e)
+		{
+			Contract.Assert(!string.IsNullOrWhiteSpace(tvPictures.SelectedNode?.Text) && tvPictures.SelectedNode.Level == 0, "当前选定的节点无效");
+			// 仅检查了锁，并不严谨
+			Contract.Assert(!Monitor.IsEntered(_lockId) && !Monitor.IsEntered(_lockTagMap), "当前正在运行一个或多个异步任务");
+
+			var tagName = tvPictures.SelectedNode.Text;
+
+			string path;
+			using (var folderBrowserDlg = new FolderBrowserDialog())
+			{
+				var result = folderBrowserDlg.ShowDialog();
+				if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDlg.SelectedPath))
+				{
+					path = folderBrowserDlg.SelectedPath;
+				}
+				else
+				{
+					return;
+				}
+			}
+
+			var idSet = _tagMap[tagName];
+
+			progressBar1.Value = 0;
+			progressBar1.Minimum = 0;
+			progressBar1.Maximum = idSet.Count;
+
+			foreach (var id in idSet)
+			{
+				foreach (var filePath in _pixivIds[id])
+				{
+					var fileName = Path.GetFileName(filePath);
+					if (fileName == null)
+					{
+						continue;
+					}
+
+					var targetPath = path + '\\' + fileName;
+
+					while (true)
+					{
+						try
+						{
+							File.Move(filePath, targetPath);
+							break;
+						}
+						catch (Exception exception)
+						{
+							var result = MessageBox.Show(string.Format(Resources.MoveErrorDescription, filePath, targetPath, exception), Resources.MessageError, MessageBoxButtons.AbortRetryIgnore);
+							switch (result)
+							{
+								case DialogResult.Abort:
+									MessageBox.Show(Resources.OperationStoppedByUser, Resources.Notification);
+									progressBar1.Value = 0;
+									return;
+								case DialogResult.Retry:
+									continue;
+								case DialogResult.Ignore:
+									goto NextFile;
+								default:
+									throw new ArgumentOutOfRangeException();
+							}
+						}
+					}
+					NextFile:;
+				}
+
+				++progressBar1.Value;
+			}
+
+			MessageBox.Show(Resources.OperationCompleted, Resources.Notification);
+		}
+
+		private void mnuDelete_Click(object sender, EventArgs e)
+		{
+			Contract.Assert(!string.IsNullOrWhiteSpace(tvPictures.SelectedNode?.Text) && tvPictures.SelectedNode.Level == 0, "当前选定的节点无效");
+			// 仅检查了锁，并不严谨
+			Contract.Assert(!Monitor.IsEntered(_lockId) && !Monitor.IsEntered(_lockTagMap), "当前正在运行一个或多个异步任务");
+
+			var tagName = tvPictures.SelectedNode.Text;
+
+			var idSet = _tagMap[tagName];
+
+			progressBar1.Value = 0;
+			progressBar1.Minimum = 0;
+			progressBar1.Maximum = idSet.Count;
+
+			foreach (var id in idSet)
+			{
+				foreach (var filePath in _pixivIds[id])
+				{
+					var fileName = Path.GetFileName(filePath);
+					if (fileName == null)
+					{
+						continue;
+					}
+
+					while (true)
+					{
+						try
+						{
+							File.Delete(filePath);
+							break;
+						}
+						catch (Exception exception)
+						{
+							var result = MessageBox.Show(string.Format(Resources.DeleteErrorDescription, filePath, exception), Resources.MessageError, MessageBoxButtons.AbortRetryIgnore);
+							switch (result)
+							{
+								case DialogResult.Abort:
+									MessageBox.Show(Resources.OperationStoppedByUser, Resources.Notification);
+									progressBar1.Value = 0;
+									return;
+								case DialogResult.Retry:
+									continue;
+								case DialogResult.Ignore:
+									goto NextFile;
+								default:
+									throw new ArgumentOutOfRangeException();
+							}
+						}
+					}
+					NextFile:;
+				}
+
+				++progressBar1.Value;
+			}
+
+			MessageBox.Show(Resources.OperationCompleted, Resources.Notification);
 		}
 	}
 }
