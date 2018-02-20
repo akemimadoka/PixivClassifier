@@ -145,13 +145,16 @@
     <value>表示获取pixiv信息时的最大超时限制，为0表示无超时限制，不能为负数</value>
   </data>
   <data name="CopyErrorDescription" xml:space="preserve">
-    <value>在复制文件 {0} 到 {1} 的过程中发生异常：{2}</value>
+    <value>在复制文件 {0} 到 {1} 的过程中发生异常：
+{2}</value>
   </data>
   <data name="DeleteErrorDescription" xml:space="preserve">
-    <value>在删除文件 {0} 的过程中发生异常：{1}</value>
+    <value>在删除文件 {0} 的过程中发生异常：
+{1}</value>
   </data>
   <data name="MoveErrorDescription" xml:space="preserve">
-    <value>在移动文件 {0} 到 {1} 的过程中发生异常：{2}</value>
+    <value>在移动文件 {0} 到 {1} 的过程中发生异常：
+{2}</value>
   </data>
   <data name="OperationCompleted" xml:space="preserve">
     <value>操作成功完成</value>
@@ -161,5 +164,12 @@
   </data>
   <data name="Notification" xml:space="preserve">
     <value>提示</value>
+  </data>
+  <data name="DeleteConfirmation" xml:space="preserve">
+    <value>确定要删除 Tag {0} 下的所有文件吗？
+此操作不可逆</value>
+  </data>
+  <data name="ApplyToAllOperationConfirmation" xml:space="preserve">
+    <value>要将本次选择应用在全部操作过程吗？</value>
   </data>
 </root>

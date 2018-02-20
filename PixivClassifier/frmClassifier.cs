@@ -304,6 +304,7 @@ namespace PixivClassifier
 
 		// 对于以下函数
 		// 假设当当前菜单可选时总是已检查当前选定节点的有效性，并且无任何异步任务正在执行
+		// TODO: 大量重复代码
 		private void mnuCopyTo_Click(object sender, EventArgs e)
 		{
 			Contract.Assert(!string.IsNullOrWhiteSpace(tvPictures.SelectedNode?.Text) && tvPictures.SelectedNode.Level == 0, "当前选定的节点无效");
@@ -332,6 +333,8 @@ namespace PixivClassifier
 			progressBar1.Minimum = 0;
 			progressBar1.Maximum = idSet.Count;
 
+			var alwaysIgnore = false;
+
 			foreach (var id in idSet)
 			{
 				foreach (var filePath in _pixivIds[id])
@@ -353,6 +356,11 @@ namespace PixivClassifier
 						}
 						catch (Exception exception)
 						{
+							if (alwaysIgnore)
+							{
+								break;
+							}
+
 							var result = MessageBox.Show(string.Format(Resources.CopyErrorDescription, filePath, targetPath, exception), Resources.MessageError, MessageBoxButtons.AbortRetryIgnore);
 							switch (result)
 							{
@@ -363,6 +371,7 @@ namespace PixivClassifier
 								case DialogResult.Retry:
 									continue;
 								case DialogResult.Ignore:
+									alwaysIgnore = MessageBox.Show(Resources.ApplyToAllOperationConfirmation, Resources.Notification, MessageBoxButtons.YesNo) == DialogResult.Yes;
 									goto NextFile;
 								default:
 									throw new ArgumentOutOfRangeException();
@@ -384,7 +393,8 @@ namespace PixivClassifier
 			// 仅检查了锁，并不严谨
 			Contract.Assert(!Monitor.IsEntered(_lockId) && !Monitor.IsEntered(_lockTagMap), "当前正在运行一个或多个异步任务");
 
-			var tagName = tvPictures.SelectedNode.Text;
+			var node = tvPictures.SelectedNode;
+			var tagName = node.Text;
 
 			string path;
 			using (var folderBrowserDlg = new FolderBrowserDialog())
@@ -405,6 +415,8 @@ namespace PixivClassifier
 			progressBar1.Value = 0;
 			progressBar1.Minimum = 0;
 			progressBar1.Maximum = idSet.Count;
+
+			var alwaysIgnore = false;
 
 			foreach (var id in idSet)
 			{
@@ -427,6 +439,11 @@ namespace PixivClassifier
 						}
 						catch (Exception exception)
 						{
+							if (alwaysIgnore)
+							{
+								break;
+							}
+
 							var result = MessageBox.Show(string.Format(Resources.MoveErrorDescription, filePath, targetPath, exception), Resources.MessageError, MessageBoxButtons.AbortRetryIgnore);
 							switch (result)
 							{
@@ -437,6 +454,7 @@ namespace PixivClassifier
 								case DialogResult.Retry:
 									continue;
 								case DialogResult.Ignore:
+									alwaysIgnore = MessageBox.Show(Resources.ApplyToAllOperationConfirmation, Resources.Notification, MessageBoxButtons.YesNo) == DialogResult.Yes;
 									goto NextFile;
 								default:
 									throw new ArgumentOutOfRangeException();
@@ -446,8 +464,12 @@ namespace PixivClassifier
 					NextFile:;
 				}
 
+				_pixivIds.Remove(id);
 				++progressBar1.Value;
 			}
+
+			_tagMap.Remove(tagName);
+			tvPictures.Nodes.Remove(node);
 
 			MessageBox.Show(Resources.OperationCompleted, Resources.Notification);
 		}
@@ -458,13 +480,21 @@ namespace PixivClassifier
 			// 仅检查了锁，并不严谨
 			Contract.Assert(!Monitor.IsEntered(_lockId) && !Monitor.IsEntered(_lockTagMap), "当前正在运行一个或多个异步任务");
 
-			var tagName = tvPictures.SelectedNode.Text;
+			var node = tvPictures.SelectedNode;
+			var tagName = node.Text;
+
+			if (MessageBox.Show(string.Format(Resources.DeleteConfirmation, tagName), Resources.Notification, MessageBoxButtons.OKCancel) != DialogResult.OK)
+			{
+				return;
+			}
 
 			var idSet = _tagMap[tagName];
 
 			progressBar1.Value = 0;
 			progressBar1.Minimum = 0;
 			progressBar1.Maximum = idSet.Count;
+
+			var alwaysIgnore = false;
 
 			foreach (var id in idSet)
 			{
@@ -485,6 +515,11 @@ namespace PixivClassifier
 						}
 						catch (Exception exception)
 						{
+							if (alwaysIgnore)
+							{
+								break;
+							}
+
 							var result = MessageBox.Show(string.Format(Resources.DeleteErrorDescription, filePath, exception), Resources.MessageError, MessageBoxButtons.AbortRetryIgnore);
 							switch (result)
 							{
@@ -495,6 +530,7 @@ namespace PixivClassifier
 								case DialogResult.Retry:
 									continue;
 								case DialogResult.Ignore:
+									alwaysIgnore = MessageBox.Show(Resources.ApplyToAllOperationConfirmation, Resources.Notification, MessageBoxButtons.YesNo) == DialogResult.Yes;
 									goto NextFile;
 								default:
 									throw new ArgumentOutOfRangeException();
@@ -504,8 +540,12 @@ namespace PixivClassifier
 					NextFile:;
 				}
 
+				_pixivIds.Remove(id);
 				++progressBar1.Value;
 			}
+
+			_tagMap.Remove(tagName);
+			tvPictures.Nodes.Remove(node);
 
 			MessageBox.Show(Resources.OperationCompleted, Resources.Notification);
 		}

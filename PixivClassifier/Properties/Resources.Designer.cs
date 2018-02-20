@@ -61,7 +61,17 @@ namespace PixivClassifier.Properties {
         }
         
         /// <summary>
-        ///   查找类似 在复制文件 {0} 到 {1} 的过程中发生异常：{2} 的本地化字符串。
+        ///   查找类似 要将本次选择应用在全部操作过程吗？ 的本地化字符串。
+        /// </summary>
+        internal static string ApplyToAllOperationConfirmation {
+            get {
+                return ResourceManager.GetString("ApplyToAllOperationConfirmation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 在复制文件 {0} 到 {1} 的过程中发生异常：
+        ///{2} 的本地化字符串。
         /// </summary>
         internal static string CopyErrorDescription {
             get {
@@ -79,7 +89,18 @@ namespace PixivClassifier.Properties {
         }
         
         /// <summary>
-        ///   查找类似 在删除文件 {0} 的过程中发生异常：{1} 的本地化字符串。
+        ///   查找类似 确定要删除 Tag {0} 下的所有文件吗？
+        ///此操作不可逆 的本地化字符串。
+        /// </summary>
+        internal static string DeleteConfirmation {
+            get {
+                return ResourceManager.GetString("DeleteConfirmation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   查找类似 在删除文件 {0} 的过程中发生异常：
+        ///{1} 的本地化字符串。
         /// </summary>
         internal static string DeleteErrorDescription {
             get {
@@ -97,7 +118,8 @@ namespace PixivClassifier.Properties {
         }
         
         /// <summary>
-        ///   查找类似 在移动文件 {0} 到 {1} 的过程中发生异常：{2} 的本地化字符串。
+        ///   查找类似 在移动文件 {0} 到 {1} 的过程中发生异常：
+        ///{2} 的本地化字符串。
         /// </summary>
         internal static string MoveErrorDescription {
             get {
