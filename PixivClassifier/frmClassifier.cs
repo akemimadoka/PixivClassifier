@@ -319,7 +319,7 @@ namespace PixivClassifier
 				var result = folderBrowserDlg.ShowDialog();
 				if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDlg.SelectedPath))
 				{
-					path = folderBrowserDlg.SelectedPath;
+					path = folderBrowserDlg.SelectedPath + '\\';
 				}
 				else
 				{
@@ -345,7 +345,7 @@ namespace PixivClassifier
 						continue;
 					}
 
-					var targetPath = path + '\\' + fileName;
+					var targetPath = path + fileName;
 
 					while (true)
 					{
@@ -402,7 +402,7 @@ namespace PixivClassifier
 				var result = folderBrowserDlg.ShowDialog();
 				if (result == DialogResult.OK && !string.IsNullOrWhiteSpace(folderBrowserDlg.SelectedPath))
 				{
-					path = folderBrowserDlg.SelectedPath;
+					path = folderBrowserDlg.SelectedPath + '\\';
 				}
 				else
 				{
@@ -428,7 +428,7 @@ namespace PixivClassifier
 						continue;
 					}
 
-					var targetPath = path + '\\' + fileName;
+					var targetPath = path + fileName;
 
 					while (true)
 					{
